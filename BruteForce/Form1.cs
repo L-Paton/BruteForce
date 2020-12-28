@@ -6,20 +6,19 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BruteForce
 {
     public partial class Form1 : Form
     {
+        public delegate void AddRowToDataGrid(HttpResponseMessage r, string content, string parametros);
         private string file { get; set; }
         public string url { get; set; }
         public string paramName { get; set; }
         public string paramValue { get; set; }
         public string keyName { get; set; }
         public bool isJson { get; set; }
-
         public string ProxyIP { get; set; }
         public string ProxyPORT { get; set; }
 
@@ -39,7 +38,8 @@ namespace BruteForce
 
             if (comboBox1.SelectedIndex == 1)
             {
-                passwordsGeneratedByFile();
+                Thread thread = new Thread(() => passwordsGeneratedByFile());
+                thread.Start();
             }
             else if(comboBox1.SelectedIndex == 0)
             {
@@ -48,7 +48,9 @@ namespace BruteForce
 
                 if (nMin != null && nMax != null)
                 {
-                    passwordsGeneratedByRange(int.Parse(nMin.Value.ToString()), int.Parse(nMax.Value.ToString()));
+                    Thread thread = new Thread(() => 
+                        passwordsGeneratedByRange(int.Parse(nMin.Value.ToString()), int.Parse(nMax.Value.ToString()), this));
+                    thread.Start();
                 }
             }
             else
@@ -64,21 +66,21 @@ namespace BruteForce
                 string[] lines = File.ReadAllLines(file);
                 foreach (var line in lines)
                 {
-                    sendRequest(line);
+                    sendRequest(line, this);
                 }
             }
         }
 
-        private void passwordsGeneratedByRange(int nMin, int nMax)
+        private void passwordsGeneratedByRange(int nMin, int nMax, Form1 form)
         {
             for (int i = nMin; i <= nMax; i++)
             {
                 char[] pass = new char[i];
-                recursion(ref pass, 0, i);
+                recursion(ref pass, 0, i, form);
             }
         }
 
-        private void recursion(ref char[] pass, int index, int maxLength)
+        private void recursion(ref char[] pass, int index, int maxLength, Form1 form)
         {
             for (int i = 0; i < ar.Length; i++)
             {
@@ -86,16 +88,16 @@ namespace BruteForce
 
                 if (index < maxLength - 1)
                 {
-                    recursion(ref pass, index + 1, maxLength);
+                    recursion(ref pass, index + 1, maxLength, form);
                 }
                 else
                 {
-                    sendRequest(String.Concat(pass));
+                    sendRequest(String.Concat(pass), form);
                 }
             }
         }
 
-        private void sendRequest(string s)
+        private void sendRequest(string s, Form1 form)
         {
             HttpClient client = null;
             var handler = GetHandler();
@@ -117,7 +119,9 @@ namespace BruteForce
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var r = client.PostAsync(url, content).Result;
                 var c = r.Content.ReadAsStringAsync().Result;
-                addRowToDataGrid(r, c, json);
+                
+                AddRowToDataGrid addRowToDataGrid = new AddRowToDataGrid(AddRowToDataGridMethod);
+                form.Invoke(addRowToDataGrid, new Object[] { r, c, json });
             }
             else
             {
@@ -129,13 +133,15 @@ namespace BruteForce
 
                 var r = client.PostAsync(url, content).Result;
                 var c = r.Content.ReadAsStringAsync().Result;
-                addRowToDataGrid(r, c, json);
+                
+                AddRowToDataGrid addRowToDataGrid = new AddRowToDataGrid(AddRowToDataGridMethod);
+                form.Invoke(addRowToDataGrid, new Object[] { r, c, json });
             }
         }
 
-        private void addRowToDataGrid(HttpResponseMessage r, string content, string parametros)
+        public void AddRowToDataGridMethod(HttpResponseMessage r, string content, string parametros)
         {
-            dataGridView.Rows.Add(r.StatusCode.ToString(), r.Headers, content, parametros);
+          dataGridView.Rows.Add(r.StatusCode.ToString(), r.Headers, content, parametros);
         }
 
         private HttpClientHandler GetHandler()
