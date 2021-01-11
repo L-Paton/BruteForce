@@ -12,7 +12,9 @@ namespace BruteForce
 {
     public partial class Form1 : Form
     {
-        public delegate void AddRowToDataGrid(HttpResponseMessage r, string content, string parametros);
+        public delegate void AddRowToDataGridDelegate(HttpResponseMessage r, string content, string parametros);
+        public delegate void ButtonsEnabledDelegate();
+        public delegate void ButtonSaveEnabledDelegate();
         public string FilePasswords { get; set; }
         public string Uri { get; set; }
         public string ParamName { get; set; }
@@ -21,6 +23,8 @@ namespace BruteForce
         public bool IsJson { get; set; }
         public string ProxyIP { get; set; }
         public string ProxyPORT { get; set; }
+
+        private Thread thread;
 
         private char[] ar = {'a', 'b','c','d','e','f','g','h','j','k','l','m','n','ñ','o','p','q','r','s','t','u','v','w','x','y','z',
             'A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z',
@@ -43,14 +47,16 @@ namespace BruteForce
 
                 if (nMin != null && nMax != null)
                 {
-                    Thread thread = new Thread(() =>
+                    ButtonsEnabled();
+                    thread = new Thread(() =>
                         PasswordsGeneratedByRange(int.Parse(nMin.Value.ToString()), int.Parse(nMax.Value.ToString()), this));
                     thread.Start();
                 }
             }
             else if(comboBox1.SelectedIndex == 1)
             {
-                Thread thread = new Thread(() => PasswordsGeneratedByFile());
+                ButtonsEnabled();
+                thread = new Thread(() => PasswordsGeneratedByFile());
                 thread.Start();
             }
             else
@@ -78,6 +84,11 @@ namespace BruteForce
                 char[] pass = new char[i];
                 Recursion(ref pass, 0, i, form);
             }
+
+            ButtonsEnabledDelegate buttonsEnabledDelegate = new ButtonsEnabledDelegate(ButtonsEnabled);
+            ButtonSaveEnabledDelegate buttonSaveEnabledDelegate = new ButtonSaveEnabledDelegate(ButtonSaveEnabled);
+            form.Invoke(buttonsEnabledDelegate);
+            form.Invoke(buttonSaveEnabledDelegate);
         }
 
         private void Recursion(ref char[] pass, int index, int maxLength, Form1 form)
@@ -120,7 +131,7 @@ namespace BruteForce
                 var r = client.PostAsync(Uri, content).Result;
                 var c = r.Content.ReadAsStringAsync().Result;
                 
-                AddRowToDataGrid addRowToDataGrid = new AddRowToDataGrid(AddRowToDataGridMethod);
+                AddRowToDataGridDelegate addRowToDataGrid = new AddRowToDataGridDelegate(AddRowToDataGridMethod);
                 form.Invoke(addRowToDataGrid, new Object[] { r, c, json });
             }
             else
@@ -134,7 +145,7 @@ namespace BruteForce
                 var r = client.PostAsync(Uri, content).Result;
                 var c = r.Content.ReadAsStringAsync().Result;
                 
-                AddRowToDataGrid addRowToDataGrid = new AddRowToDataGrid(AddRowToDataGridMethod);
+                AddRowToDataGridDelegate addRowToDataGrid = new AddRowToDataGridDelegate(AddRowToDataGridMethod);
                 form.Invoke(addRowToDataGrid, new Object[] { r, c, json });
             }
         }
@@ -166,6 +177,24 @@ namespace BruteForce
             }
         }
 
+        private void SaveDataGridData()
+        {
+            using (StreamWriter file = new StreamWriter(@".\\prueba.txt"))
+            {
+                for (int row = 0; row < dataGridView.Rows.Count; row++)
+                {
+                    for (int col = 0; col < dataGridView.Rows[row].Cells.Count; col++)
+                    {
+                        if(dataGridView.Rows[row].Cells[col].Value != null)
+                        {
+                            string value = dataGridView.Rows[row].Cells[col].Value.ToString();
+                            file.WriteLine(value);
+                        }
+                    }
+                }
+            }
+        }
+
         private void BtnSelectFile_Click(object sender, EventArgs e)
         {
             var result = openFileDialog.ShowDialog();
@@ -176,7 +205,6 @@ namespace BruteForce
                 if(txtFileName != null) txtFileName.Text = FilePasswords;
             }
         }
-
         private void SetParameters()
         {
             if(this.txtUrl.Text.Equals("") || this.txtParamName.Text.Equals("") || this.txtParamValue.Text.Equals("") || this.txtKeyName.Text.Equals(""))
@@ -212,7 +240,6 @@ namespace BruteForce
                 PrintCheckBox1();
             }
         }
-
         private void PrintCheckBox0()
         {
             this.Controls.RemoveByKey("btnSelectFile");
@@ -249,6 +276,7 @@ namespace BruteForce
             label10.Size = new Size(141, 17);
             label10.TabIndex = 46;
             label10.Text = "Rango de carácteres";
+            
             NumericUpDown nMin = new NumericUpDown();
             NumericUpDown nMax = new NumericUpDown();
 
@@ -259,7 +287,7 @@ namespace BruteForce
             // 
             nMin.Location = new Point(550, 600);
             nMin.Minimum = new decimal(new int[] {
-                    4,
+                    1,
                     0,
                     0,
                     0});
@@ -267,7 +295,7 @@ namespace BruteForce
             nMin.Size = new Size(120, 22);
             nMin.TabIndex = 45;
             nMin.Value = new decimal(new int[] {
-                    4,
+                    1,
                     0,
                     0,
                     0});
@@ -276,7 +304,7 @@ namespace BruteForce
             // 
             nMax.Location = new Point(550, 650);
             nMax.Minimum = new decimal(new int[] {
-                    4,
+                    1,
                     0,
                     0,
                     0});
@@ -284,11 +312,10 @@ namespace BruteForce
             nMax.Size = new Size(120, 22);
             nMax.TabIndex = 44;
             nMax.Value = new decimal(new int[] {
-                    4,
+                    1,
                     0,
                     0,
                     0});
-
 
             this.Controls.Add(label8);
             this.Controls.Add(label9);
@@ -300,7 +327,6 @@ namespace BruteForce
             ((System.ComponentModel.ISupportInitialize)(nMax)).EndInit();
 
         }
-
         private void PrintCheckBox1()
         {
             this.Controls.RemoveByKey("label8");
@@ -314,7 +340,6 @@ namespace BruteForce
             // 
             // btnSelectFile
             // 
-            btnSelectFile.Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Right)));
             btnSelectFile.Location = new Point(500, 500);
             btnSelectFile.Name = "btnSelectFile";
             btnSelectFile.Size = new Size(126, 37);
@@ -337,6 +362,35 @@ namespace BruteForce
 
             this.Controls.Add(btnSelectFile);
             this.Controls.Add(txtFileName);
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            if(thread != null)
+            {
+                if (thread.IsAlive)
+                {
+                    ButtonsEnabled();
+                    thread.Abort();
+                }
+            }
+        }
+
+        private void ButtonsEnabled()
+        {
+            btnStop.Enabled = !btnStop.Enabled;
+            btnAttack.Enabled = !btnAttack.Enabled;
+        }
+
+        private void ButtonSaveEnabled()
+        {
+            btnSave.Enabled = !btnSave.Enabled;
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveDataGridData();
+            ButtonSaveEnabled();
         }
     }
 }

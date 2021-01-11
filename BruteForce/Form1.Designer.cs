@@ -52,6 +52,8 @@ namespace BruteForce
             this.label1 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label11 = new System.Windows.Forms.Label();
+            this.btnStop = new System.Windows.Forms.Button();
+            this.btnSave = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -181,6 +183,7 @@ namespace BruteForce
             this.txtKeyName.Name = "txtKeyName";
             this.txtKeyName.Size = new System.Drawing.Size(307, 22);
             this.txtKeyName.TabIndex = 39;
+            this.txtKeyName.Text = "password";
             // 
             // label7
             // 
@@ -203,6 +206,7 @@ namespace BruteForce
             this.txtParamName.Name = "txtParamName";
             this.txtParamName.Size = new System.Drawing.Size(307, 22);
             this.txtParamName.TabIndex = 37;
+            this.txtParamName.Text = "username";
             // 
             // txtParamValue
             // 
@@ -212,6 +216,7 @@ namespace BruteForce
             this.txtParamValue.Name = "txtParamValue";
             this.txtParamValue.Size = new System.Drawing.Size(307, 22);
             this.txtParamValue.TabIndex = 38;
+            this.txtParamValue.Text = "value";
             // 
             // label6
             // 
@@ -259,6 +264,7 @@ namespace BruteForce
             this.txtUrl.Name = "txtUrl";
             this.txtUrl.Size = new System.Drawing.Size(383, 22);
             this.txtUrl.TabIndex = 36;
+            this.txtUrl.Text = "http://www.example.com";
             // 
             // label1
             // 
@@ -288,8 +294,7 @@ namespace BruteForce
             // 
             // label11
             // 
-            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label11.AutoSize = true;
             this.label11.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -299,6 +304,30 @@ namespace BruteForce
             this.label11.TabIndex = 50;
             this.label11.Text = "--- Password generator ---";
             // 
+            // btnStop
+            // 
+            this.btnStop.Enabled = false;
+            this.btnStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStop.Location = new System.Drawing.Point(132, 31);
+            this.btnStop.Name = "btnStop";
+            this.btnStop.Size = new System.Drawing.Size(88, 42);
+            this.btnStop.TabIndex = 51;
+            this.btnStop.Text = "Stop";
+            this.btnStop.UseVisualStyleBackColor = true;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.Enabled = false;
+            this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSave.Location = new System.Drawing.Point(852, 33);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(88, 42);
+            this.btnSave.TabIndex = 52;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -306,6 +335,8 @@ namespace BruteForce
             this.AutoScroll = true;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(968, 977);
+            this.Controls.Add(this.btnSave);
+            this.Controls.Add(this.btnStop);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.txtKeyName);
@@ -324,7 +355,6 @@ namespace BruteForce
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnAttack);
             this.Controls.Add(this.dataGridView);
-            this.MaximizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -360,6 +390,8 @@ namespace BruteForce
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button btnSave;
     }
 }
 
